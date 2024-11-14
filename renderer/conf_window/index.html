@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>配置</title>
+  <style type="text/css">
+    
+  </style>
+</head>
+
+<body style="display:flex;flex-direction: column;gap: 10px;width: 100vw;height: 100vh;overflow: hidden;">
+  <div style="display:flex;gap: 10px;">
+    <button onclick="handleSave()">保存</button>
+    <button onclick="handleSaveAndReOpen()">保存并重新打开</button>
+    <button onclick="handleReset()">恢复默认值</button>
+  </div>
+  <div style="display:flex;gap: 10px;">
+  </div>
+  <div style="display:flex;flex-direction: column;gap: 10px;">
+    <div style="display:none;gap: 10px;">
+      <div>使用本地地址：</div>
+      <input id="fgLocal" type="checkbox" onchange="handleChange()" />
+    </div>
+    <div id="remoteUrlDiv" style="display:flex;gap: 10px;">
+      <div>远程地址：</div>
+      <input style="min-width: 500px;" id="url" type="url" />
+    </div>
+  </div>
+  <div style="display:flex;gap: 10px;">
+    <div>下载缓存目录：</div>
+    <div style="min-width: 500px;" id="cacheDir"></div>
+    <button onclick="handleCacheDirConf()">配置</button>
+  </div>
+
+  <script type="text/javascript">
+    const init = async () => {
+      const clientConf = await window.tcdtAPI.fetchClientConf();
+      const inputDom = document.getElementById("url");
+      inputDom.value = clientConf.tcdtUrl;
+
+      const cacheDirDom = document.getElementById("cacheDir");
+      cacheDirDom.innerHTML = clientConf.downloadCachePath ?? '---';
+
+      const faLocalDom = document.getElementById("fgLocal");
+      faLocalDom.checked = clientConf.fgLocal;
+
+      const remoteUrlDivDom = document.getElementById("remoteUrlDiv");
+      remoteUrlDivDom.style.display = faLocalDom.checked ? 'none' : 'flex';
+    };
+    init();
+
+    const handleSave = async () => {
+      save(false)
+    };
+
+    const handleSaveAndReOpen = async () => {
+      save(true)
+    };
+
+    const save = (fgReOpen) => {
+      const inputDom = document.getElementById("url");
+      const cacheDirDom = document.getElementById("cacheDir");
+      const faLocalDom = document.getElementById("fgLocal");
+      if (window.tcdtAPI && inputDom.value && inputDom.value.trim() !== "") {
+        window.tcdtAPI.saveClientConf({
+          tcdtUrl: inputDom.value,
+          downloadCachePath: cacheDirDom.innerText,
+          fgLocal: faLocalDom.checked,
+          fgReOpen,
+        });
+        return;
+      }
+      window.alert("url地址配置不正确：" + inputDom.value);
+    }
+
+    const handleReset = async () => {
+      const defaultConf = await window.tcdtAPI.resetClientConf();
+      const inputDom = document.getElementById("url");
+      inputDom.value = defaultConf.tcdtUrl;
+      const cacheDirDom = document.getElementById("cacheDir");
+      cacheDirDom.innerHTML = defaultConf.downloadCachePath ?? '---';
+      const faLocalDom = document.getElementById("fgLocal");
+      faLocalDom.checked = defaultConf.fgLocal;
+      const remoteUrlDivDom = document.getElementById("remoteUrlDiv");
+      remoteUrlDivDom.style.display = faLocalDom.checked ? 'none' : 'flex';
+    };
+
+    const handleCacheDirConf = async () => {
+      const cacheDirDom = document.getElementById("cacheDir");
+      const result = await window.tcdtAPI.selectPath(cacheDirDom.innerText);
+      if (result.canceled) {
+        return;
+      }
+      cacheDirDom.innerHTML = result.filePaths.length === 1 ? result.filePaths.join() : '---';
+    };
+
+    const handleChange = () => {
+      const faLocalDom = document.getElementById("fgLocal");
+      const remoteUrlDivDom = document.getElementById("remoteUrlDiv");
+      remoteUrlDivDom.style.display = faLocalDom.checked ? 'none' : 'flex';
+    }
+  </script>
+</body>
+
+</html>
