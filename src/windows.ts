@@ -83,7 +83,12 @@ export const createTcdtWindow = (): void => {
   if (clientConf.fgLocal) {
     modelDriveWindow.loadFile(`${__dirname}/../renderer/tcdt_window/index.html`);
   } else {
-    modelDriveWindow.loadURL(clientConf.tcdtUrl);
+    let tcdtUrl = "http://127.0.0.1:80/";
+    //配置的key值改变，缓存的配置可能出现问题
+    if (!clientConf.tcdtUrl) {
+      tcdtUrl = clientConf.tcdtUrl;
+    }
+    modelDriveWindow.loadURL(tcdtUrl);
   }
 
   log.info('createCftWindow:', modelDriveWindow.id);

@@ -19,7 +19,7 @@ export function copyDirectory(src: string, dest: string, rule?: string,) {
     files.forEach((item, index) => {
         const itemPath = path.join(src, item);
         const itemStat = fs.statSync(itemPath);// 获取文件信息
-        const savedPath = path.join(dest, itemPath.replace(src, ''));
+        const savedPath = path.join(dest, itemPath.replace(path.join(src, ""), ''));
         const savedDir = savedPath.substring(0, savedPath.lastIndexOf(sep));
         if (itemStat.isFile()) {
             if (rule && rule.trim() !== '') {
